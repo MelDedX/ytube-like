@@ -6,6 +6,7 @@ import { videos, videoUpdateSchema } from "@/db/schema";
 import { mux } from "@/lib/mux";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { workflow } from "@/lib/workflow";
 
 export const videosRouter = createTRPCRouter({
   update: protectedProcedure
@@ -71,12 +72,34 @@ export const videosRouter = createTRPCRouter({
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       const { id: userId } = ctx.user;
+      const utapi = new UTApi();
+
+      // Önce videoyu bul ve thumbnail, preview bilgilerini al
+      const [video] = await db
+        .select({
+          id: videos.id,
+          thumbnailKey: videos.thumbnailKey,
+          previewKey: videos.previewKey, // Önizleme için eğer böyle bir alan varsa
+        })
+        .from(videos)
+        .where(and(eq(videos.id, input.id), eq(videos.userId, userId)));
+
+      if (!video) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // UploadThing'den thumbnail ve preview'i sil
+      const keysToDelete = [];
+      if (video.thumbnailKey) keysToDelete.push(video.thumbnailKey);
+      if (video.previewKey) keysToDelete.push(video.previewKey);
+
+      if (keysToDelete.length > 0) {
+        await utapi.deleteFiles(keysToDelete);
+      }
+
+      // Videoyu veritabanından sil
       const [removedVideo] = await db
         .delete(videos)
         .where(and(eq(videos.id, input.id), eq(videos.userId, userId)))
         .returning();
-
-      if (!removedVideo) throw new TRPCError({ code: "NOT_FOUND" });
 
       return removedVideo;
     }),
@@ -127,5 +150,37 @@ export const videosRouter = createTRPCRouter({
         .returning();
 
       return updatedVideo;
+    }),
+  generateTitle: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { workflowRunId } = await workflow.trigger({
+        url: `${process.env.UPSTASH_WORKFLOW_URL}/api/videos/workflows/title`,
+        body: { userId, videoId: input.id },
+      });
+      return workflowRunId;
+    }),
+  generateDescription: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { workflowRunId } = await workflow.trigger({
+        url: `${process.env.UPSTASH_WORKFLOW_URL}/api/videos/workflows/description`,
+        body: { userId, videoId: input.id },
+      });
+      return workflowRunId;
+    }),
+  generateThumbnail: protectedProcedure
+    .input(
+      z.object({ id: z.string().uuid(), prompt: z.string().min(10).optional() })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { workflowRunId } = await workflow.trigger({
+        url: `${process.env.UPSTASH_WORKFLOW_URL}/api/videos/workflows/thumbnail`,
+        body: { userId, videoId: input.id, prompt: input.prompt },
+      });
+      return workflowRunId;
     }),
 });
