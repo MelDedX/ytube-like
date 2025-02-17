@@ -78,7 +78,7 @@ export const videoReactionsRouter = createTRPCRouter({
         return deletedViewerReaction;
       }
 
-      const [createdVieoReaction] = await db
+      const [createdVideoReaction] = await db
         .insert(videoReactions)
         .values({ userId, videoId, type: "dislike" })
         .onConflictDoUpdate({
@@ -89,6 +89,6 @@ export const videoReactionsRouter = createTRPCRouter({
         })
         .returning();
 
-      return createdVieoReaction;
+      return createdVideoReaction;
     }),
 });
