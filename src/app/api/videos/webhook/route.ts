@@ -122,8 +122,6 @@ export const POST = async (request: Request) => {
         asset_id: string;
       };
 
-      console.log("Track ready");
-
       if (!data.asset_id)
         return new Response("Missing asset Id", { status: 400 });
 
