@@ -46,11 +46,5 @@ const CategoriesSectionSuspense = ({ categoryId }: CategoriesSectionProps) => {
     router.push(url.toString());
   };
 
-  return (
-    <FilterCarousel
-      value={categoryId}
-      data={data}
-      onSelect={onSelect}
-    ></FilterCarousel>
-  );
+  return <FilterCarousel value={categoryId} data={data} onSelect={onSelect} />;
 };

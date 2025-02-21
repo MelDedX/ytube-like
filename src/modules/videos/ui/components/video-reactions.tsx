@@ -57,7 +57,10 @@ export const VideoReactions = ({
         disabled={like.isPending || dislike.isPending}
       >
         <ThumbsUpIcon
-          className={cn("size-5", viewerReaction === "like" && "fill-black")}
+          className={cn(
+            "size-5 ",
+            viewerReaction === "like" && "fill-black dark:fill-white"
+          )}
         />
         {likes}
       </Button>
@@ -69,7 +72,10 @@ export const VideoReactions = ({
         disabled={like.isPending || dislike.isPending}
       >
         <ThumbsDownIcon
-          className={cn("size-5", viewerReaction === "dislike" && "fill-black")}
+          className={cn(
+            "size-5",
+            viewerReaction === "dislike" && "fill-black dark:fill-white"
+          )}
         />
         {dislikes}
       </Button>

@@ -2,11 +2,41 @@
 
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { ClapperboardIcon, UserCircleIcon, Youtube } from "lucide-react";
+import {
+  ClapperboardIcon,
+  UserCircleIcon,
+  Youtube,
+  Sun,
+  Moon,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export const AuthButton = () => {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <>
+    <div className="flex items-center gap-4">
+      {/* Tema Değiştirici */}
+      {mounted && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          {theme === "dark" ? (
+            <Sun className="w-5 h-5" />
+          ) : (
+            <Moon className="w-5 h-5" />
+          )}
+        </Button>
+      )}
+
       <SignedIn>
         <UserButton>
           <UserButton.MenuItems>
@@ -24,6 +54,7 @@ export const AuthButton = () => {
           </UserButton.MenuItems>
         </UserButton>
       </SignedIn>
+
       <SignedOut>
         <SignInButton mode="modal">
           <Button
@@ -35,6 +66,6 @@ export const AuthButton = () => {
           </Button>
         </SignInButton>
       </SignedOut>
-    </>
+    </div>
   );
 };
