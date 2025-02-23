@@ -183,7 +183,7 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     },
   });
 
-  const generateTitle = trpc.videos.generateThumbnail.useMutation({
+  const generateTitle = trpc.videos.generateTitle.useMutation({
     onSuccess: () => {
       toast.success("Bg job started!", {
         description: "this may take some time",
@@ -194,7 +194,7 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     },
   });
 
-  const generateDescription = trpc.videos.generateThumbnail.useMutation({
+  const generateDescription = trpc.videos.generateDescription.useMutation({
     onSuccess: () => {
       toast.success("Bg job started!", {
         description: "this may take some time",
